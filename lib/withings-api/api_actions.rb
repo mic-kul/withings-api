@@ -37,9 +37,8 @@ module Withings
 
         http_response = api_http_request!(consumer_token, access_token, "/notify?action=list", {:parameters => parsed_parameters})
 
-        api_response = Withings::Api::ApiResponse.create!(http_response, Withings::Api::MeasureGetmeasResults)
-        raise Withings::Api::ApiError.new(api_response.code) unless api_response.success?
-        api_response.body
+        p http_response
+        http_response
       end
 
       # measure/getmeas API call.  Full details @ www.withings.com/en/api/wbsapiv2#getmeas
