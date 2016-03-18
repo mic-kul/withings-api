@@ -26,6 +26,22 @@ module Withings
         api_response.body
       end
 
+      def list_webhooks(*arguments)
+        arguments = parse_arguments arguments
+        # extract arguements
+        consumer_token = consumer_token(arguments.delete(:consumer_token))
+        access_token = access_token(arguments.delete(:access_token))
+
+
+        parsed_parameters = {}
+
+        http_response = api_http_request!(consumer_token, access_token, "/notify?action=list", {:parameters => parsed_parameters})
+
+        api_response = Withings::Api::ApiResponse.create!(http_response, Withings::Api::MeasureGetmeasResults)
+        raise Withings::Api::ApiError.new(api_response.code) unless api_response.success?
+        api_response.body
+      end
+
       # measure/getmeas API call.  Full details @ www.withings.com/en/api/wbsapiv2#getmeas
       #
       # @overload measure_getmeas(consumer_token, access_token, api_parameters, options = {})
