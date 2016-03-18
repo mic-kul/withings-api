@@ -9,6 +9,23 @@ module Withings
     module ApiActions
       include OAuthBase
 
+      # notify/subscribe API call. Full details @ oauth.withings.com/api/doc#api-Notification-notify_subscribe
+      def register_webhook(*arguments)
+        arguments = parse_arguments arguments
+        # extract arguements
+        consumer_token = consumer_token(arguments.delete(:consumer_token))
+        access_token = access_token(arguments.delete(:access_token))
+        parameters = arguments.delete(:api_parameters)
+
+        parsed_parameters = parse_notification_parameters(parameters)
+
+        http_response = api_http_request!(consumer_token, access_token, "notify?action=subscribe", {:parameters => parsed_parameters})
+
+        api_response = Withings::Api::ApiResponse.create!(http_response, Withings::Api::MeasureGetmeasResults)
+        raise Withings::Api::ApiError.new(api_response.code) unless api_response.success?
+        api_response.body
+      end
+
       # measure/getmeas API call.  Full details @ www.withings.com/en/api/wbsapiv2#getmeas
       #
       # @overload measure_getmeas(consumer_token, access_token, api_parameters, options = {})
@@ -64,6 +81,31 @@ module Withings
             parsed_args[:api_parameters] = args[index] : raise(ArgumentError, :api_parameters)
 
         parsed_args
+      end
+
+      def parse_notification_parameters(parameters)
+        parsed_parameters = {}
+
+        param = :user_id
+        if parameters.key? param
+          parsed_parameters[:userid] = parameters.delete(param).to_s
+        end
+
+        param = :callback_url
+        if parameters.key? param
+          parsed_parameters[:callbackurl] = parameters.delete(param).to_s
+        end
+
+        param = :comment
+        if parameters.key? param
+          parsed_parameters[:comment] = parameters.delete(param).to_s
+        end
+
+        if ! parameters.empty?
+          raise ArgumentError, parameters.keys.inspect
+        end
+
+        parsed_parameters
       end
 
       def parse_measure_getmeas_parameters(parameters)
