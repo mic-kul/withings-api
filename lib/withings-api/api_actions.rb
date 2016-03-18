@@ -19,7 +19,7 @@ module Withings
 
         parsed_parameters = parse_notification_parameters(parameters)
 
-        http_response = api_http_request!(consumer_token, access_token, "notify?action=subscribe", {:parameters => parsed_parameters})
+        http_response = api_http_request!(consumer_token, access_token, "/notify?action=subscribe", {:parameters => parsed_parameters})
 
         api_response = Withings::Api::ApiResponse.create!(http_response, Withings::Api::MeasureGetmeasResults)
         raise Withings::Api::ApiError.new(api_response.code) unless api_response.success?
